@@ -167,10 +167,6 @@ function peuplerScene(){
 	tapis1.position = new BABYLON.Vector3(-3,0.005,7.5) ; 
 	tapis1.rotation.x = Math.PI/2 ;
 
-	var porte = creerPorte("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
-	porte.parent = origine;
-	porte.position = new BABYLON.Vector3(-3,0,7.5) ; 
-
 
 	//Création du sol en 10*10 murs 
 	var nbFloorTile = 10;
