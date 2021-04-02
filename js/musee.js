@@ -115,21 +115,23 @@ function createLights(){
 
 function peuplerScene(){
 
+	// Dimensions musée
+	var hauteurMusee = 10.0;
+	var hauteurSalle = hauteurMusee/2;
+
+	var largeurMusee = 30.0;
+	var largeurSalle = largeurMusee/2;
+
 	// Création des materiaux
-
 	var materiauRouge = creerMateriauSimple("rouge",{couleur:new BABYLON.Color3(0.8,0.1,0.1)},scene) ;
-
 	var materiauCloison = creerMateriauSimple("mat-cloison",{texture:"assets/textures/murs.jpg"}, scene) ; 
-	
 	var materiauSol = creerMateriauSimple("mat-sol",{texture:"assets/textures/solCarrelage.jpg"}, scene) ; 
 
-	
 	sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
 	sphere.position =  new BABYLON.Vector3(0,2,5) ;
 
 	// Création du sol
 	var sol = creerSol("sol",{},scene) ; 
-
 
 	// Création du musée
 	var origine = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0}, scene) ;
@@ -156,7 +158,6 @@ function peuplerScene(){
 	mur.parent = origine;
 	mur.position = new BABYLON.Vector3(0,0,0) ; 
 
-
 	var tapis = creerCloison("tapis",{hauteur:15.0,largeur:4.0,materiau:materiauRouge},scene) ; 
 	tapis.parent = origine; 
 	tapis.position = new BABYLON.Vector3(0,0.01,0) ; 
@@ -167,19 +168,38 @@ function peuplerScene(){
 	tapis1.position = new BABYLON.Vector3(-3,0.005,7.5) ; 
 	tapis1.rotation.x = Math.PI/2 ;
 
+	var porte = creerPorte("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	porte.parent = origine;
+	porte.position = new BABYLON.Vector3(-3,0,7.5) ; 
 
-	//Création du sol en 10*10 murs 
+	//Création du sol RDC en 10*10 murs 
 	var nbFloorTile = 10;
 	for(var i=0; i< nbFloorTile; i++)
 	{
 		for(var j=0; j< nbFloorTile; j++)
 		{
-			var sol = creerCloison("sol",{hauteur:30/nbFloorTile,largeur:30/nbFloorTile,materiau:materiauSol},scene) ;
+			var sol = creerCloison("sol",{hauteur:largeurMusee/nbFloorTile,largeur:largeurMusee/nbFloorTile,materiau:materiauSol},scene) ;
 			sol.parent = origine;
-			sol.position = new BABYLON.Vector3(-15 + 30/(2*nbFloorTile) + i*30/(nbFloorTile), 0, j*30/(nbFloorTile)) ; 
+			sol.position = new BABYLON.Vector3(-largeurSalle + largeurMusee/(2*nbFloorTile) + i*largeurMusee/(nbFloorTile), 0, j*largeurMusee/(nbFloorTile)) ; 
 			sol.rotation.x = Math.PI/2 ;
 		}
 	}
+
+	//Création du sol étage en 10*5 murs 
+	for(var i=0; i< nbFloorTile; i++)
+	{
+		for(var j=0; j< nbFloorTile/2; j++)
+		{
+			var sol = creerCloison("sol",{hauteur:largeurMusee/nbFloorTile,largeur:largeurMusee/nbFloorTile,materiau:materiauSol},scene) ;
+			sol.parent = origine;
+			sol.position = new BABYLON.Vector3(-largeurSalle + largeurMusee/(2*nbFloorTile) + i*largeurMusee/(nbFloorTile), hauteurSalle, largeurSalle+j*largeurMusee/(nbFloorTile)) ; 
+			sol.rotation.x = Math.PI/2 ;
+		}
+	}
+
+	// var solEtage = creerCloison("solEtage", {hauteur:largeurMusee, largeur:largeurSalle, materiau:materiauSolInterieur}, scene) 
+	// solEtage.position = new BABYLON.Vector3(-largeurSalle/2,hauteurSalle,-largeurSalle);
+	// solEtage.rotation.x = Math.PI/2;
 
 	/*//murs
 	var nbWall = 30;
@@ -201,16 +221,68 @@ function peuplerScene(){
 		} 
 	}*/
 
-	dimensionsMursExterieurs = new BABYLON.Vector2(10,30);
-	dimensionsMurInterieur = new BABYLON.Vector2(5,30);
+	dimensionsMursExterieurs = new BABYLON.Vector2(hauteurMusee,largeurMusee);
+	// dimensionsMurInterieur = new BABYLON.Vector2(hauteurSalle,largeurMusee);
 
 	var materiauBetonMursExterieurs = creerMateriauSimple("matBeton0",{texture:"assets/textures/concrete.jpg"}, scene) ; 
 	materiauBetonMursExterieurs.diffuseTexture.uScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMursExterieurs.x;
 	materiauBetonMursExterieurs.diffuseTexture.vScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMursExterieurs.y;
-	var materiauBetonMurInterieur = creerMateriauSimple("matBeton1",{texture:"assets/textures/concrete.jpg"}, scene) ; 
-	materiauBetonMurInterieur.diffuseTexture.uScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.x;
-	materiauBetonMurInterieur.diffuseTexture.vScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.y;
 
+	var materiauBetonMurInterieur = creerMateriauSimple("matBeton1",{texture:"assets/textures/concrete.jpg"}, scene) ; 
+	// materiauBetonMurInterieur.diffuseTexture.uScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.x;
+	// materiauBetonMurInterieur.diffuseTexture.vScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.y;
+
+	// Création des cloisons du musée
+	var cloisonEst = creerCloison("cloisonEst",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
+	cloisonEst.parent = origine;
+	cloisonEst.position = new BABYLON.Vector3(0,0,0);
+
+	var cloisonOuest = creerCloison("cloisonOuest",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
+	cloisonOuest.parent = origine;
+	cloisonOuest.position = new BABYLON.Vector3(0,0,largeurMusee);
+
+	var cloisonNord = creerCloison("cloisonNord",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
+	cloisonNord.parent = origine;
+	cloisonNord.position = new BABYLON.Vector3(-largeurSalle,0,largeurSalle); 
+	cloisonNord.rotation.y = Math.PI/2;
+
+	var cloisonSud = creerCloison("cloisonSud",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
+	cloisonSud.parent = origine;
+	cloisonSud.position = new BABYLON.Vector3(largeurSalle,0,largeurSalle);
+	cloisonSud.rotation.y = Math.PI/2;
+
+	// Création cloisons salles rez-de-chaussée
+	for(var i = 0; i < 2; i++)
+	{
+		var cloison = creerCloison("cloisonSalles"+i, {hauteur:hauteurSalle, largeur:largeurSalle, materiau:materiauBetonMurInterieur}, scene) ; 
+		cloison.parent = origine;
+		cloison.position = new BABYLON.Vector3(-largeurMusee/6+largeurMusee/3*i,0,largeurMusee-largeurSalle/2) ; 
+		cloison.rotation.y = Math.PI/2;
+	}
+
+	var largeurCloison = largeurMusee/10;
+
+	var cloison = creerCloison("cloisonSalleHall0", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
+	cloison.parent = origine;
+	cloison.position = new BABYLON.Vector3(-largeurSalle+largeurCloison/2,0,largeurSalle);
+
+	var cloison = creerCloison("cloisonSalleHall3", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
+	cloison.parent = origine;
+	cloison.position = new BABYLON.Vector3(largeurSalle-largeurCloison/2,0,largeurSalle);
+
+	for(var i = 1; i < 3; i++)
+	{
+		var cloison = creerCloison("cloisonSalleHall"+i, {hauteur: hauteurSalle, largeur: 2*largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
+		cloison.parent = origine;
+		cloison.position = new BABYLON.Vector3(-largeurMusee/6+largeurMusee/3*(i-1),0,largeurSalle);
+	}
+
+	// // Création de la cloison de la mezzanine
+	var cloisonMezzanine = creerCloison("cloisonMezzanine",{hauteur:hauteurSalle, largeur:largeurMusee-largeurCloison, materiau:materiauBetonMurInterieur}, scene);
+	cloisonMezzanine.parent = origine;
+	cloisonMezzanine.position = new BABYLON.Vector3(largeurCloison/2,hauteurSalle,largeurSalle);
+
+	/*
 	var frontWall = creerCloison("cloison", {hauteur:10,largeur:30,materiau:materiauBetonMursExterieurs}, scene) ;
 	frontWall.parent = origine;
 	frontWall.position = new BABYLON.Vector3(0,0,0) ;
@@ -232,13 +304,14 @@ function peuplerScene(){
 	var cl = creerCloison("cloison", {hauteur:5,largeur:30,materiau:materiauBetonMurInterieur}, scene) ;
 	cl.parent = origine;
 	cl.position = new BABYLON.Vector3(0,0,15);
+	*/
 
 	//https://www.babylonjs-playground.com/#T6NP3F#0 EXEMPLE D'UTILISATION DE LA SOUSTRACTION DE MESH
 
 	
 	//Escalier
-	var stairsPosition = new BABYLON.Vector3(-6, 0, 14.5);
-	var angle =Math.PI ;
+	var stairsPosition = new BABYLON.Vector3(-7.8, 0, largeurSalle-0.5);
+	var angle = Math.PI ;
 	var rayon = 4;
 	var steps = 16;
 	for(var i=-0; i< steps; i++){

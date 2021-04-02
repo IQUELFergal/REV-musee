@@ -2,6 +2,9 @@
 
 function creerScene(){
 	var scn = new BABYLON.Scene(engine) ; 
+	scn.enablePhysics();
+	scn.gravity = new BABYLON.Vector3(0, -0.1, 0);
+	scn.collisionsEnabled = true;
 	return scn ;
 }
 
@@ -21,6 +24,9 @@ function creerCamera(name,options,scn){
 	camera.attachControl(canvas) ;
 	camera.inertia = 0.01;
 	camera.angularSensibility  = 1000;
+	camera.applyGravity = true;
+	camera.checkCollisions = true;
+	camera.ellipsoid = new BABYLON.Vector3(1, 0.7, 1);
 
 	camera.attachControl(canvas, false) ; 
 
@@ -70,6 +76,63 @@ function creerMateriauSimple(nom,options,scn){
 		materiau.diffuseTexture.vScale = vScale ; 
 	}
 	return materiau ; 
+}
+
+function creerPorte(nom,opts,scn){
+
+	let options  = opts || {} ;
+	let hauteur = options.hauteur || 1.0 ; 
+	let largeur = options.largeur || 1.0 ;
+	let epaisseur = options.epaisseur || 0.1 ;
+
+	var group = new BABYLON.TransformNode("group-"+nom);
+	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+
+	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	materiauInvisible.alpha = 0.5 ;
+
+	var encadrure = new BABYLON.TransformNode("encadrure-"+nom);
+	encadrure.parent = group;
+	let encadrureG = BABYLON.MeshBuilder.CreateBox(nom+"encadrureG",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureG.material = materiau ;
+	encadrureG.parent = encadrure;
+	encadrureG.checkCollisions = true ;
+	encadrureG.position.y = hauteur / 2.0 ;
+	encadrureG.position.x = -largeur / 2 ;
+	let encadrureH = BABYLON.MeshBuilder.CreateBox(nom+"encadrureH",{width:largeur+epaisseur*2,height:0.2,depth:epaisseur*2},scn) ;
+	encadrureH.material = materiau ;
+	encadrureH.parent = encadrure;
+	encadrureH.checkCollisions = true ;
+	encadrureH.position.y = hauteur + epaisseur ;
+	let encadrureD = BABYLON.MeshBuilder.CreateBox(nom+"encadrureD",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureD.material = materiau ;
+	encadrureD.parent = encadrure;
+	encadrureD.checkCollisions = true ;
+	encadrureD.position.y = hauteur / 2.0 ;
+	encadrureD.position.x = largeur / 2 ;
+	
+
+	let porteG = BABYLON.MeshBuilder.CreateBox(nom+"porteD",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	porteG.material = materiau ;
+	porteG.parent = group;
+	porteG.checkCollisions = true ;
+	porteG.position.x = -largeur / 4.0 ;
+	porteG.position.y = hauteur / 2.0 ;
+
+	let porteD = BABYLON.MeshBuilder.CreateBox(nom+"porteG",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	porteD.material = materiau ;
+	porteD.parent = group;
+	porteD.checkCollisions = true ;
+	porteD.position.x = largeur / 4.0 ;
+	porteD.position.y = hauteur / 2.0 ;
+
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scene) ;
+	capteurPorte.parent = group;
+	capteurPorte.position.y = hauteur / 2.0 ;
+	capteurPorte.material = materiauInvisible ;
+
+
+	return group;
 }
 
 
@@ -142,6 +205,7 @@ function creerCloison(nom,opts,scn){
 	cloison.parent = groupe ; 
 	cloison.position.y = hauteur / 2.0 ; 
 
+	cloison.checkCollisions = true;
 
 
     return groupe ;  
