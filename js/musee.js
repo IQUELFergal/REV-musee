@@ -15,7 +15,23 @@ function init(){
 	engine = new BABYLON.Engine(canvas,true) ; 
 	scene  = creerScene() ; 
 
-	camera = creerCamera("camera",{}, scene) ; 
+	camera = creerCamera("camera",{}, scene) ;
+
+	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	materiauInvisible.alpha = 0.5 ;
+	const block = BABYLON.Mesh.CreateBox("block",1,scene) ;
+	block.material = materiauInvisible ;
+	block.parent = camera ;
+
+	const blockTest = BABYLON.Mesh.CreateBox("blockTest",1,scene) ;
+	blockTest.material = materiauInvisible ;
+
+
+	//const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
+	//const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
+	//block.actionManager.registerAction(a1) ;
+	//block.actionManager.registerAction(a2) ;
+
 	
 	// GUI
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
