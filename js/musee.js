@@ -1,16 +1,37 @@
 
+const soundUriBase = "./assets/sounds/";
 var canvas, engine ;
 var scene, camera ;
 var temps=0;
 var vitesseRotation=1;
 var advancedTexture;
+var sequences = {};
+var sounds = [];
 var nom;
 var nomTableau = "Nom";
 var descriptionTableau = "Decription";
 
 var distance = 0;
 
-function init(){
+function init() {
+
+	loadJSON('./musee.json', (data) => {
+
+		data = JSON.parse(data)
+
+		// load sound
+		for (var i in data.sounds){
+			sound = data.sounds[i];
+			sounds.push(loadSound(scene, sound.name, sound.uri, sound.volume, sound.spatial));
+
+		}
+
+		for (var i in data.sequenceur) {
+			let s = data.sequenceur[i];
+			sequences[s.name] = new Sequenceur(s.name, s.loop, s.sounds)
+		}
+	})
+
 	canvas = document.getElementById("renderCanvas") ; 
 	engine = new BABYLON.Engine(canvas,true) ; 
 	scene  = creerScene() ; 
@@ -44,13 +65,10 @@ function init(){
 	
 	//panel.notRenderable = true;
 
-
-
-
 	createLights() ;
 	peuplerScene() ;  
 
-	set_FPS_mode(scene, canvas,camera) ; 
+	set_FPS_mode(scene, canvas,camera) ;
 	
 	window.addEventListener("resize", function(){engine.resize();}) ; 
 
@@ -73,7 +91,25 @@ function init(){
 			temps=temps+(1/engine.getFps())
 			maBox.rotation.y=vitesseRotation*temps;
 			}); 
-	engine.runRenderLoop( function(){scene.render();} ) ; 
+	// engine.runRenderLoop( function(){scene.render();} ) ; 
+
+	var ready = false;
+	engine.runRenderLoop(function(){
+		// if (!allSoundReady()) {
+		// 	return 0;
+		// }
+		// else if (!ready) {
+		// 	playclassicSound();
+		// 	ready = true;
+		// }
+
+		// let dt = engine.getDeltaTime();
+		// whatchObject(dt);
+		// updateNimbus();
+		// updateReticle();
+		scene.render();
+
+	}) ;
 }
 
 
@@ -196,10 +232,6 @@ function peuplerScene(){
 			sol.rotation.x = Math.PI/2 ;
 		}
 	}
-
-	// var solEtage = creerCloison("solEtage", {hauteur:largeurMusee, largeur:largeurSalle, materiau:materiauSolInterieur}, scene) 
-	// solEtage.position = new BABYLON.Vector3(-largeurSalle/2,hauteurSalle,-largeurSalle);
-	// solEtage.rotation.x = Math.PI/2;
 
 	/*//murs
 	var nbWall = 30;

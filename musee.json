@@ -1,0 +1,41 @@
+{
+    "meshs": [
+        {
+            "name": "tableau1",
+            "name_seq_classic": "piano",
+            "name_seq_click": "piano",
+            "name_seq_focus": "piano",
+            "name_seq_nimbus": "piano",
+            "radius_nimbus": 15.0,
+            "scale_x": 1.0,
+            "scale_y": 1.0,
+            "scale_z": 1.0,
+            "type": "tableau",
+            "uri": "",
+            "x": 0.0,
+            "y": 0.0,
+            "z": 75.0
+        }
+    ],
+    "sequenceur": [
+        {
+            "loop": false,
+            "name": "piano",
+            "sounds": [
+                [
+                    0,
+                    "piano",
+                    0
+                ]
+            ]
+        },
+    ],
+    "sounds": [
+        {
+            "name": "piano",
+            "spatial": true,
+            "uri": "piano.mp3",
+            "volume": 1.0
+        }
+    ]
+}
