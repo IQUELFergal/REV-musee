@@ -72,6 +72,48 @@ function creerMateriauSimple(nom,options,scn){
 	return materiau ; 
 }
 
+function creerPorte(nom,opts,scn){
+
+	let options  = opts || {} ;
+	let hauteur = options.hauteur || 1.0 ; 
+	let largeur = options.largeur || 1.0 ;
+	let epaisseur = options.epaisseur || 0.1 ;
+
+	var group = new BABYLON.TransformNode("group-"+nom);
+	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+
+	var encadrure = new BABYLON.TransformNode("encadrure-"+nom);
+	encadrure.parent = group;
+	let encadrureG = BABYLON.MeshBuilder.CreateBox(nom+"encadrureG",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureG.material = materiau ;
+	encadrureG.parent = encadrure;
+	encadrureG.position.y = hauteur / 2.0 ;
+	encadrureG.position.x = -largeur / 2 ;
+	let encadrureH = BABYLON.MeshBuilder.CreateBox(nom+"encadrureH",{width:largeur+epaisseur*2,height:0.2,depth:epaisseur*2},scn) ;
+	encadrureH.material = materiau ;
+	encadrureH.parent = encadrure;
+	encadrureH.position.y = hauteur + epaisseur ;
+	let encadrureD = BABYLON.MeshBuilder.CreateBox(nom+"encadrureD",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureD.material = materiau ;
+	encadrureD.parent = encadrure;
+	encadrureD.position.y = hauteur / 2.0 ;
+	encadrureD.position.x = largeur / 2 ;
+	
+
+	let porteG = BABYLON.MeshBuilder.CreateBox(nom+"porteD",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	porteG.material = materiau ;
+	porteG.parent = group;
+	porteG.position.x = -largeur / 4.0 ;
+	porteG.position.y = hauteur / 2.0 ;
+
+	let porteD = BABYLON.MeshBuilder.CreateBox(nom+"porteG",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	porteD.material = materiau ;
+	porteD.parent = group;
+	porteD.position.x = largeur / 4.0 ;
+	porteD.position.y = hauteur / 2.0 ;
+	return group;
+}
+
 
 function creerTeleporteur(nom,opts,scn){
 
