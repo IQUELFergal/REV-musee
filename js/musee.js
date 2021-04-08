@@ -8,15 +8,26 @@ var nom;
 var nomTableau = "Nom";
 var descriptionTableau = "Decription";
 
-var distance = 0;
+var distance = "+";
 
 function init(){
 	canvas = document.getElementById("renderCanvas") ; 
 	engine = new BABYLON.Engine(canvas,true) ; 
 	scene  = creerScene() ; 
 
+	const materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	materiauInvisible.alpha = 0.5;//0.0001 ;
+
 	camera = creerCamera("camera",{}, scene) ; 
-	
+	// Volume virtuel associé à la caméra
+	const block = BABYLON.MeshBuilder.CreateBox("block",{width:1,height:1,depth:1},scene) ;
+	block.material = materiauInvisible ;
+	block.actionManager = new BABYLON.ActionManager(scene) ;
+	block.parent = camera ;
+
+
+
+
 	// GUI
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -45,8 +56,6 @@ function init(){
 	//panel.notRenderable = true;
 
 
-
-
 	createLights() ;
 	peuplerScene() ;  
 
@@ -55,18 +64,29 @@ function init(){
 	window.addEventListener("resize", function(){engine.resize();}) ; 
 
 	window.addEventListener('click',function(event){
-		var pickResult=scene.pick(event.clientX, event.clientY);
+		//var pickResult=scene.pick(event.clientX, event.clientY);
+		var pickResult=scene.pick(window.outerWidth/2, window.outerHeight/2);
 		distance+=1;
 		//distance = BABYLON.Vector3.Distance(camera.position, pickResult.pickedMesh.position);
 		interact(pickResult);
 	});
 
-	window.addEventListener('mousemove',function(event){
-		distance+=1;
-		//nom.text = distance;
-		//var pickResult=scene.pick(event.clientX, event.clientY)
-		//distance = BABYLON.Vector3.distance(camera.position, pickResult.pickedMesh.position);
-	});
+	const porte = BABYLON.MeshBuilder.CreateBox("porte",{width:1.5,height:2.5,depth:0.1},scene) ;
+	porte.position.y = 1.25 ;
+	porte.checkCollisions = true ;
+	// Détecteur de présence pour la porte
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:2,height:2.5,depth:3},scene) ;
+	capteurPorte.position.y = 1.25 ;
+	capteurPorte.material = materiauInvisible ;
+
+	const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
+	const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
+	
+	block.actionManager.registerAction(a1) ;
+	block.actionManager.registerAction(a2) ;
+
+
+
 
 	var maBox= new BABYLON.Mesh.CreateBox("box_1",5,scene);
 	scene.registerBeforeRender(function(){
@@ -79,7 +99,6 @@ function init(){
 
 function interact(pickResult)
 {
-	
 	if (pickResult.hit)
 	{
 		if(pickResult.pickedMesh.metadata.type == 'teleporter')
@@ -105,6 +124,30 @@ function interact(pickResult)
 			sphere.position = pickResult.pickedPoint ;
 		}
 	}
+}
+
+function openCloseDoor(door, positionToGo){
+	var anim = new BABYLON.Animation("doorPos",
+									"position",60,
+									BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+									BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+									var keys = [{frame:0, value:door.position},{frame:200, value:positionToGo}];
+	anim.setKeys(keys);
+	door.animations.push(position);
+	scene.beginAnimation(door, 0, 200, false, 1);
+}
+
+
+function getChild(node, name){
+	var children = node.getChildren();
+	for(var i = 1; i < children.length; i++)
+	{
+		if (children[i].name == name)
+		{
+			return children[i];
+		}
+	}
+	return node;
 }
 
 
