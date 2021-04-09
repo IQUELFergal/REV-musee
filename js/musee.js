@@ -67,10 +67,8 @@ function init(){
 	window.addEventListener("resize", function(){engine.resize();}) ; 
 
 	window.addEventListener('click',function(event){
-		//var pickResult=scene.pick(event.clientX, event.clientY);
 		var pickResult=scene.pick(window.outerWidth/2, window.outerHeight/2);
 		distance+=1;
-		//distance = BABYLON.Vector3.Distance(camera.position, pickResult.pickedMesh.position);
 		interact(pickResult);
 	});
 
@@ -235,29 +233,6 @@ function peuplerScene(){
 		}
 	}
 
-	// var solEtage = creerCloison("solEtage", {hauteur:largeurMusee, largeur:largeurSalle, materiau:materiauSolInterieur}, scene) 
-	// solEtage.position = new BABYLON.Vector3(-largeurSalle/2,hauteurSalle,-largeurSalle);
-	// solEtage.rotation.x = Math.PI/2;
-
-	/*//murs
-	var nbWall = 30;
-	for	(var n=0; n< 3; n++)
-	{
-		for(var i=0; i< nbWall; i++){
-			var cl = creerCloison("cloison-"+i, {hauteur:n==1?5:10,largeur:30/nbWall,materiau:materiauBeton}, scene) ;
-			cl.parent = origine;
-			cl.position = new BABYLON.Vector3(-15+30/(2*nbWall) + i*30/(nbWall),0,15*n) ;
-		} 
-	}
-	for	(var n=0; n< 2; n++)
-	{
-		for(var i=0; i< nbWall; i++){
-			var cl = creerCloison("cloison-"+i, {hauteur:10,largeur:30/nbWall,materiau:materiauBeton}, scene) ;
-			cl.parent = origine;
-			cl.position = new BABYLON.Vector3(-15+30*n,0, i*30/(nbWall) + 30/(2*nbWall)) ;
-			cl.rotation.y = Math.PI/2 ;
-		} 
-	}*/
 
 	dimensionsMursExterieurs = new BABYLON.Vector2(hauteurMusee,largeurMusee);
 	// dimensionsMurInterieur = new BABYLON.Vector2(hauteurSalle,largeurMusee);
