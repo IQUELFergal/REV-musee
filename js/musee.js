@@ -71,16 +71,22 @@ function init(){
 		interact(pickResult);
 	});
 
+
+	//A SUPPRIMER
 	const porte = BABYLON.MeshBuilder.CreateBox("porte",{width:1.5,height:2.5,depth:0.1},scene) ;
 	porte.position.y = 1.25 ;
+	porte.position.z = 5 ;
 	porte.checkCollisions = true ;
 	// Détecteur de présence pour la porte
 	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:2,height:2.5,depth:3},scene) ;
 	capteurPorte.position.y = 1.25 ;
+	capteurPorte.position.z = 5 ;
 	capteurPorte.material = materiauInvisible ;
+	//END
+
 
 	const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
-	const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
+	const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
 	
 	block.actionManager.registerAction(a1) ;
 	block.actionManager.registerAction(a2) ;
@@ -127,14 +133,17 @@ function interact(pickResult)
 }
 
 function openCloseDoor(door, positionToGo){
-	var anim = new BABYLON.Animation("doorPos",
-									"position",60,
-									BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-									BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-									var keys = [{frame:0, value:door.position},{frame:200, value:positionToGo}];
+	nom.text = door.name.toString();
+	var anim = new BABYLON.Animation("doorPos","position",60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+	var doorOpenPosition = new BABYLON.Vector3(door.position.x + positionToGo.x,door.position.y + positionToGo.y,door.position.z + positionToGo.z);
+	var keys = [{frame:0, value:door.position},{frame:200, value:doorOpenPosition}];
 	anim.setKeys(keys);
-	door.animations.push(position);
+	door.animations.push(anim);
 	scene.beginAnimation(door, 0, 200, false, 1);
+}
+
+function testCollisions(texte){
+	nom.text = texte.toString();
 }
 
 
