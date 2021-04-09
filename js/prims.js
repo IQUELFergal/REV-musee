@@ -112,14 +112,14 @@ function creerPorteSimple(nom,opts,scn){
 	encadrureD.position.x = largeur / 2 ;
 	
 
-	let porte = BABYLON.MeshBuilder.CreateBox("porte",{width:largeur,height:hauteur,depth:epaisseur},scn) ;
+	let porte = BABYLON.MeshBuilder.CreateBox("porte",{width:largeur,height:hauteur,depth:epaisseur-0.01},scn) ;
 	porte.material = materiau ;
 	porte.parent = group;
 	porte.checkCollisions = true ;
 	porte.position.y = hauteur / 2.0 ;
 
 
-	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scn) ;
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur*1.5},scn) ;
 	capteurPorte.parent = group;
 	capteurPorte.position.y = hauteur / 2.0 ;
 	capteurPorte.material = materiauInvisible ;
@@ -176,21 +176,21 @@ function creerPorteDouble(nom,opts,scn){
 	encadrureD.position.x = largeur / 2 ;
 	
 
-	let porteG = BABYLON.MeshBuilder.CreateBox("porteG",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	let porteG = BABYLON.MeshBuilder.CreateBox("porteG",{width:largeur/2,height:hauteur,depth:epaisseur-0.01},scn) ;
 	porteG.material = materiau ;
 	porteG.parent = group;
 	porteG.checkCollisions = true ;
 	porteG.position.x = -largeur / 4.0 ;
 	porteG.position.y = hauteur / 2.0 ;
 
-	let porteD = BABYLON.MeshBuilder.CreateBox("porteD",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	let porteD = BABYLON.MeshBuilder.CreateBox("porteD",{width:largeur/2,height:hauteur,depth:epaisseur-0.01},scn) ;
 	porteD.material = materiau ;
 	porteD.parent = group;
 	porteD.checkCollisions = true ;
 	porteD.position.x = largeur / 4.0 ;
 	porteD.position.y = hauteur / 2.0 ;
 
-	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scn) ;
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur*1.5},scn) ;
 	capteurPorte.parent = group;
 	capteurPorte.position.y = hauteur / 2.0 ;
 	capteurPorte.material = materiauInvisible ;

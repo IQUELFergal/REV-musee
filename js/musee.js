@@ -74,31 +74,13 @@ function init(){
 		interact(pickResult);
 	});
 
-
-	//A SUPPRIMER
-	const porte = BABYLON.MeshBuilder.CreateBox("porte",{width:1.5,height:2.5,depth:0.1},scene) ;
-	porte.position.y = 1.25 ;
-	porte.position.z = 5 ;
-	porte.checkCollisions = true ;
-	// Détecteur de présence pour la porte
-	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:2,height:2.5,depth:3},scene) ;
-	capteurPorte.position.y = 1.25 ;
-	capteurPorte.position.z = 5 ;
-	capteurPorte.material = materiauInvisible ;
-	//END
-	
+	//Interaction portes
 	for(var i = 0; i < portes.length; i++)
 	{
 		block.actionManager.registerAction(portes[i].metadata.openAction) ;
 		block.actionManager.registerAction(portes[i].metadata.closeAction) ;
 	}
 
-
-	//const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
-	//const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
-	
-	//block.actionManager.registerAction(a1) ;
-	//block.actionManager.registerAction(a2) ;
 
 	var maBox= new BABYLON.Mesh.CreateBox("box_1",5,scene);
 	scene.registerBeforeRender(function(){
@@ -213,15 +195,20 @@ function peuplerScene(){
 	tapis1.position = new BABYLON.Vector3(-3,0.005,7.5) ; 
 	tapis1.rotation.x = Math.PI/2 ;
 
-	var porte = creerPorteDouble("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
-	porte.parent = origine;
-	porte.position = new BABYLON.Vector3(-3,0,7.5) ; 
-	portes.push(porte);
+	var porteG = creerPorteDouble("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	porteG.parent = origine;
+	porteG.position = new BABYLON.Vector3(-10,0,15) ; 
+	portes.push(porteG);
 
-	var porte1 = creerPorteSimple("entree1",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
-	porte1.parent = origine;
-	porte1.position = new BABYLON.Vector3(3,0,7.5) ; 
-	portes.push(porte1);
+	var porteM = creerPorteDouble("entree1",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	porteM.parent = origine;
+	porteM.position = new BABYLON.Vector3(0,0,15) ; 
+	portes.push(porteM);
+
+	var porteD = creerPorteDouble("entree1",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	porteD.parent = origine;
+	porteD.position = new BABYLON.Vector3(10,0,15) ; 
+	portes.push(porteD);
 
 	//Création du sol RDC en 10*10 murs 
 	var nbFloorTile = 10;
