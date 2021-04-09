@@ -1,42 +1,29 @@
 
-const soundUriBase = "./assets/sounds/";
+// const soundUriBase = "./assets/sounds/";
 var canvas, engine ;
 var scene, camera ;
+var data = "";
 var temps=0;
 var vitesseRotation=1;
 var advancedTexture;
 var sequences = {};
-var sounds = [];
+var music;
 var nom;
-var nomTableau = "Nom";
-var descriptionTableau = "Decription";
-
+// var nomTableau = "Nom";
+// var descriptionTableau = "Decription";
 var distance = 0;
 
-function init() {
-
-	loadJSON('./musee.json', (data) => {
-
-		data = JSON.parse(data)
-
-		// load sound
-		for (var i in data.sounds){
-			sound = data.sounds[i];
-			sounds.push(loadSound(scene, sound.name, sound.uri, sound.volume, sound.spatial));
-
-		}
-
-		for (var i in data.sequenceur) {
-			let s = data.sequenceur[i];
-			sequences[s.name] = new Sequenceur(s.name, s.loop, s.sounds)
-		}
-	})
+function init(){
 
 	canvas = document.getElementById("renderCanvas") ; 
 	engine = new BABYLON.Engine(canvas,true) ; 
 	scene  = creerScene() ; 
-
 	camera = creerCamera("camera",{}, scene) ; 
+
+	music = new BABYLON.Sound("music", "assets/sounds/piano.mp3",
+	    scene, null, {
+	        loop: true, autoplay: true,
+	    });
 	
 	// GUI
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -62,7 +49,6 @@ function init() {
     descr.fontStyle = "bold";
     panel.addControl(descr);*/
 
-	
 	//panel.notRenderable = true;
 
 	createLights() ;
@@ -87,29 +73,17 @@ function init() {
 	});
 
 	var maBox= new BABYLON.Mesh.CreateBox("box_1",5,scene);
+
 	scene.registerBeforeRender(function(){
 			temps=temps+(1/engine.getFps())
 			maBox.rotation.y=vitesseRotation*temps;
 			}); 
-	// engine.runRenderLoop( function(){scene.render();} ) ; 
 
-	var ready = false;
 	engine.runRenderLoop(function(){
-		// if (!allSoundReady()) {
-		// 	return 0;
-		// }
-		// else if (!ready) {
-		// 	playclassicSound();
-		// 	ready = true;
-		// }
-
-		// let dt = engine.getDeltaTime();
+		let dt = engine.getDeltaTime();
 		// whatchObject(dt);
-		// updateNimbus();
-		// updateReticle();
 		scene.render();
-
-	}) ;
+	}); 
 }
 
 
@@ -148,7 +122,6 @@ function createLights(){
 	var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(5,5,5), scene) ; 
 }
 
-
 function peuplerScene(){
 
 	// Dimensions musée
@@ -173,8 +146,6 @@ function peuplerScene(){
 	var origine = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0}, scene) ;
 	origine.position = new BABYLON.Vector3(0,0,0) ;
 
-
-
 	/*//EXEMPLE : CREATION D'UN MUR AVEC UN TABLEAU DESSUS =============================
 
 	//Creation d un mur
@@ -189,7 +160,6 @@ function peuplerScene(){
 	tableau.position.y = 1.7 ; 
 	//================================================================================*/
 
-	
 	var mur = creerCloison("cloison",{hauteur:1.0,largeur:2.0,materiau:materiauRouge},scene) ; 
 	mur.parent = origine;
 	mur.position = new BABYLON.Vector3(0,0,0) ; 
@@ -232,26 +202,6 @@ function peuplerScene(){
 			sol.rotation.x = Math.PI/2 ;
 		}
 	}
-
-	/*//murs
-	var nbWall = 30;
-	for	(var n=0; n< 3; n++)
-	{
-		for(var i=0; i< nbWall; i++){
-			var cl = creerCloison("cloison-"+i, {hauteur:n==1?5:10,largeur:30/nbWall,materiau:materiauBeton}, scene) ;
-			cl.parent = origine;
-			cl.position = new BABYLON.Vector3(-15+30/(2*nbWall) + i*30/(nbWall),0,15*n) ;
-		} 
-	}
-	for	(var n=0; n< 2; n++)
-	{
-		for(var i=0; i< nbWall; i++){
-			var cl = creerCloison("cloison-"+i, {hauteur:10,largeur:30/nbWall,materiau:materiauBeton}, scene) ;
-			cl.parent = origine;
-			cl.position = new BABYLON.Vector3(-15+30*n,0, i*30/(nbWall) + 30/(2*nbWall)) ;
-			cl.rotation.y = Math.PI/2 ;
-		} 
-	}*/
 
 	dimensionsMursExterieurs = new BABYLON.Vector2(hauteurMusee,largeurMusee);
 	// dimensionsMurInterieur = new BABYLON.Vector2(hauteurSalle,largeurMusee);
@@ -314,34 +264,9 @@ function peuplerScene(){
 	cloisonMezzanine.parent = origine;
 	cloisonMezzanine.position = new BABYLON.Vector3(largeurCloison/2,hauteurSalle,largeurSalle);
 
-	/*
-	var frontWall = creerCloison("cloison", {hauteur:10,largeur:30,materiau:materiauBetonMursExterieurs}, scene) ;
-	frontWall.parent = origine;
-	frontWall.position = new BABYLON.Vector3(0,0,0) ;
-
-	var cl = creerCloison("cloison", {hauteur:10,largeur:30,materiau:materiauBetonMursExterieurs}, scene) ;
-	cl.parent = origine;
-	cl.rotation.y = Math.PI/2 ;
-	cl.position = new BABYLON.Vector3(15,0,15) ;
-
-	var cl = creerCloison("cloison", {hauteur:10,largeur:30,materiau:materiauBetonMursExterieurs}, scene) ;
-	cl.parent = origine;
-	cl.position = new BABYLON.Vector3(0,0,30) ;
-
-	var cl = creerCloison("cloison", {hauteur:10,largeur:30,materiau:materiauBetonMursExterieurs}, scene) ;
-	cl.parent = origine;
-	cl.rotation.y = Math.PI/2 ;
-	cl.position = new BABYLON.Vector3(-15,0,15) ;
-
-	var cl = creerCloison("cloison", {hauteur:5,largeur:30,materiau:materiauBetonMurInterieur}, scene) ;
-	cl.parent = origine;
-	cl.position = new BABYLON.Vector3(0,0,15);
-	*/
-
 	//https://www.babylonjs-playground.com/#T6NP3F#0 EXEMPLE D'UTILISATION DE LA SOUSTRACTION DE MESH
-
 	
-	//Escalier
+	// Escaliers
 	var stairsPosition = new BABYLON.Vector3(-7.8, 0, largeurSalle-0.5);
 	var angle = Math.PI ;
 	var rayon = 4;
@@ -371,15 +296,8 @@ function peuplerScene(){
 		y.rotation.y = angle;
 	}
 	
-
-
 	// Création d une sphere
 	var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0}, scene) ; 
-
-	sphere.material = new BABYLON.StandardMaterial("materiau1", scene) ; 
-	sphere.position = new BABYLON.Vector3(-15,0,0) ;
-	
-
 }
 
 var isLocked = false ; 
