@@ -78,7 +78,7 @@ function creerMateriauSimple(nom,options,scn){
 	return materiau ; 
 }
 
-function creerPorte(nom,opts,scn){
+function creerPorteSimple(nom,opts,scn){
 
 	let options  = opts || {} ;
 	let hauteur = options.hauteur || 1.0 ; 
@@ -88,7 +88,7 @@ function creerPorte(nom,opts,scn){
 	var group = new BABYLON.TransformNode("group-"+nom);
 	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
 
-	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scn) ;
 	materiauInvisible.alpha = 0.5 ;
 
 	var encadrure = new BABYLON.TransformNode("encadrure-"+nom);
@@ -112,29 +112,113 @@ function creerPorte(nom,opts,scn){
 	encadrureD.position.x = largeur / 2 ;
 	
 
-	let porteG = BABYLON.MeshBuilder.CreateBox(nom+"porteD",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	let porte = BABYLON.MeshBuilder.CreateBox("porte",{width:largeur,height:hauteur,depth:epaisseur},scn) ;
+	porte.material = materiau ;
+	porte.parent = group;
+	porte.checkCollisions = true ;
+	porte.position.y = hauteur / 2.0 ;
+
+
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scn) ;
+	capteurPorte.parent = group;
+	capteurPorte.position.y = hauteur / 2.0 ;
+	capteurPorte.material = materiauInvisible ;
+	var openAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseSimpleDoor(scn, porte, new BABYLON.Vector3(largeur,0,0));});
+	var closeAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseSimpleDoor(scn, porte,new BABYLON.Vector3(0,0,0)) ;}) ;
+
+	
+	group.metadata = {"openAction":openAction,"closeAction":closeAction};
+	porte.metadata = {"basePos":porte.position};
+
+	return group;
+}
+
+function openCloseSimpleDoor(scene, door, positionToGo){
+	var anim = new BABYLON.Animation("animPorteG","position",60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+	var doorOpenPosition = new BABYLON.Vector3(door.metadata.basePos.x - positionToGo.x,door.metadata.basePos.y - positionToGo.y,door.metadata.basePos.z - positionToGo.z);
+	var keys = [{frame:0, value:door.position},{frame:200, value:doorOpenPosition}];
+	anim.setKeys(keys);
+	door.animations.push(anim);
+	scene.beginAnimation(door, 0, 200, false, 1);
+}
+
+function creerPorteDouble(nom,opts,scn){
+
+	let options  = opts || {} ;
+	let hauteur = options.hauteur || 1.0 ; 
+	let largeur = options.largeur || 1.0 ;
+	let epaisseur = options.epaisseur || 0.1 ;
+
+	var group = new BABYLON.TransformNode("group-"+nom);
+	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+
+	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scn) ;
+	materiauInvisible.alpha = 0.5 ;
+
+	var encadrure = new BABYLON.TransformNode("encadrure-"+nom);
+	encadrure.parent = group;
+	let encadrureG = BABYLON.MeshBuilder.CreateBox(nom+"encadrureG",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureG.material = materiau ;
+	encadrureG.parent = encadrure;
+	encadrureG.checkCollisions = true ;
+	encadrureG.position.y = hauteur / 2.0 ;
+	encadrureG.position.x = -largeur / 2 ;
+	let encadrureH = BABYLON.MeshBuilder.CreateBox(nom+"encadrureH",{width:largeur+epaisseur*2,height:0.2,depth:epaisseur*2},scn) ;
+	encadrureH.material = materiau ;
+	encadrureH.parent = encadrure;
+	encadrureH.checkCollisions = true ;
+	encadrureH.position.y = hauteur + epaisseur ;
+	let encadrureD = BABYLON.MeshBuilder.CreateBox(nom+"encadrureD",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
+	encadrureD.material = materiau ;
+	encadrureD.parent = encadrure;
+	encadrureD.checkCollisions = true ;
+	encadrureD.position.y = hauteur / 2.0 ;
+	encadrureD.position.x = largeur / 2 ;
+	
+
+	let porteG = BABYLON.MeshBuilder.CreateBox("porteG",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
 	porteG.material = materiau ;
 	porteG.parent = group;
 	porteG.checkCollisions = true ;
 	porteG.position.x = -largeur / 4.0 ;
 	porteG.position.y = hauteur / 2.0 ;
 
-	let porteD = BABYLON.MeshBuilder.CreateBox(nom+"porteG",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
+	let porteD = BABYLON.MeshBuilder.CreateBox("porteD",{width:largeur/2,height:hauteur,depth:epaisseur},scn) ;
 	porteD.material = materiau ;
 	porteD.parent = group;
 	porteD.checkCollisions = true ;
 	porteD.position.x = largeur / 4.0 ;
 	porteD.position.y = hauteur / 2.0 ;
 
-	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scene) ;
+	const capteurPorte = BABYLON.MeshBuilder.CreateBox("capteur-porte",{width:largeur,height:hauteur,depth:largeur},scn) ;
 	capteurPorte.parent = group;
 	capteurPorte.position.y = hauteur / 2.0 ;
 	capteurPorte.material = materiauInvisible ;
+	var openAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoubleDoor(scn, porteG, porteD, new BABYLON.Vector3(largeur/2,0,0));});
+	var closeAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoubleDoor(scn, porteG, porteD,new BABYLON.Vector3(0,0,0)) ;}) ;
 
+	
+	group.metadata = {"openAction":openAction,"closeAction":closeAction};
+	porteG.metadata = {"basePos":porteG.position};
+	porteD.metadata = {"basePos":porteD.position};
 
 	return group;
 }
 
+function openCloseDoubleDoor(scene, doorG, doorD, positionToGo){
+	var animG = new BABYLON.Animation("animPorteG","position",60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+	var animD = new BABYLON.Animation("animPorteD","position",60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+	var doorOpenPositionG = new BABYLON.Vector3(doorG.metadata.basePos.x - positionToGo.x,doorG.metadata.basePos.y - positionToGo.y,doorG.metadata.basePos.z - positionToGo.z);
+	var doorOpenPositionD = new BABYLON.Vector3(doorD.metadata.basePos.x + positionToGo.x,doorD.metadata.basePos.y + positionToGo.y,doorD.metadata.basePos.z + positionToGo.z);
+	var keysG = [{frame:0, value:doorG.position},{frame:200, value:doorOpenPositionG}];
+	var keysD = [{frame:0, value:doorD.position},{frame:200, value:doorOpenPositionD}];
+	animG.setKeys(keysG);
+	animD.setKeys(keysD);
+	doorG.animations.push(animG);
+	doorD.animations.push(animD);
+	scene.beginAnimation(doorG, 0, 200, false, 1);
+	scene.beginAnimation(doorD, 0, 200, false, 1);
+}
 
 function creerTeleporteur(nom,opts,scn){
 

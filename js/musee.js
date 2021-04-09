@@ -4,11 +4,14 @@ var scene, camera ;
 var temps=0;
 var vitesseRotation=1;
 var advancedTexture;
-var nom;
+var reticuleGUI;
 var nomTableau = "Nom";
 var descriptionTableau = "Decription";
 
-var distance = "+";
+var portes = [];
+
+var reticule = "+";
+
 
 function init(){
 	canvas = document.getElementById("renderCanvas") ; 
@@ -36,13 +39,13 @@ function init(){
     panel.isVertical = true; 
     advancedTexture.addControl(panel);   
 
-    nom = new BABYLON.GUI.TextBlock();
-	nom.text = distance.toString();
-    nom.color = "white";
-    nom.height = "30px";
-    nom.fontSize = 24;
-    nom.fontStyle = "bold";
-    panel.addControl(nom);
+    reticuleGUI = new BABYLON.GUI.TextBlock();
+	reticuleGUI.text = reticule.toString();
+    reticuleGUI.color = "white";
+    reticuleGUI.height = "30px";
+    reticuleGUI.fontSize = 24;
+    reticuleGUI.fontStyle = "bold";
+    panel.addControl(reticuleGUI);
 
 	/*var descr = new BABYLON.GUI.TextBlock();
     descr.text = descriptionTableau;
@@ -83,16 +86,19 @@ function init(){
 	capteurPorte.position.z = 5 ;
 	capteurPorte.material = materiauInvisible ;
 	//END
-
-
-	const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
-	const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
 	
-	block.actionManager.registerAction(a1) ;
-	block.actionManager.registerAction(a2) ;
+	for(var i = 0; i < portes.length; i++)
+	{
+		block.actionManager.registerAction(portes[i].metadata.openAction) ;
+		block.actionManager.registerAction(portes[i].metadata.closeAction) ;
+	}
 
 
-
+	//const a1 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(2,0,0)) ;}) ;
+	//const a2 = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoor(porte,new BABYLON.Vector3(-2,0,0)) ;}) ;
+	
+	//block.actionManager.registerAction(a1) ;
+	//block.actionManager.registerAction(a2) ;
 
 	var maBox= new BABYLON.Mesh.CreateBox("box_1",5,scene);
 	scene.registerBeforeRender(function(){
@@ -132,24 +138,11 @@ function interact(pickResult)
 	}
 }
 
-function openCloseDoor(door, positionToGo){
-	nom.text = door.name.toString();
-	var anim = new BABYLON.Animation("doorPos","position",60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
-	var doorOpenPosition = new BABYLON.Vector3(door.position.x + positionToGo.x,door.position.y + positionToGo.y,door.position.z + positionToGo.z);
-	var keys = [{frame:0, value:door.position},{frame:200, value:doorOpenPosition}];
-	anim.setKeys(keys);
-	door.animations.push(anim);
-	scene.beginAnimation(door, 0, 200, false, 1);
-}
-
-function testCollisions(texte){
-	nom.text = texte.toString();
-}
 
 
 function getChild(node, name){
 	var children = node.getChildren();
-	for(var i = 1; i < children.length; i++)
+	for(var i = 0; i < children.length; i++)
 	{
 		if (children[i].name == name)
 		{
@@ -220,9 +213,15 @@ function peuplerScene(){
 	tapis1.position = new BABYLON.Vector3(-3,0.005,7.5) ; 
 	tapis1.rotation.x = Math.PI/2 ;
 
-	var porte = creerPorte("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	var porte = creerPorteDouble("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
 	porte.parent = origine;
 	porte.position = new BABYLON.Vector3(-3,0,7.5) ; 
+	portes.push(porte);
+
+	var porte1 = creerPorteSimple("entree1",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
+	porte1.parent = origine;
+	porte1.position = new BABYLON.Vector3(3,0,7.5) ; 
+	portes.push(porte1);
 
 	//Création du sol RDC en 10*10 murs 
 	var nbFloorTile = 10;
