@@ -1,129 +1,53 @@
 
-// const soundUriBase = "./assets/sounds/";
 var canvas, engine ;
 var scene, camera ;
-var data = "";
-var temps=0;
-var vitesseRotation=1;
-var advancedTexture;
-var sequences = {};
-var music;
-var nom;
-// var nomTableau = "Nom";
-// var descriptionTableau = "Decription";
-var distance = 0;
+var timeSpendOnFocusObject = 0;
+var focusObject;
+const focusTime = 3000;
+var reticle;
 
-function init(){
-
-	canvas = document.getElementById("renderCanvas") ; 
-	engine = new BABYLON.Engine(canvas,true) ; 
-	scene  = creerScene() ; 
-	camera = creerCamera("camera",{}, scene) ; 
-
-	music = new BABYLON.Sound("music", "assets/sounds/piano.mp3",
-	    scene, null, {
-	        loop: true, autoplay: true,
-	    });
-	
-	// GUI
-    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-    // Panel
-    var panel = new BABYLON.GUI.StackPanel();
-    panel.isVertical = true; 
-    advancedTexture.addControl(panel);   
-
-    nom = new BABYLON.GUI.TextBlock();
-	nom.text = distance.toString();
-    nom.color = "white";
-    nom.height = "30px";
-    nom.fontSize = 24;
-    nom.fontStyle = "bold";
-    panel.addControl(nom);
-
-	/*var descr = new BABYLON.GUI.TextBlock();
-    descr.text = descriptionTableau;
-    descr.color = "white";
-    descr.height = "70px";
-    descr.fontSize = 24;
-    descr.fontStyle = "bold";
-    panel.addControl(descr);*/
-
-	//panel.notRenderable = true;
-
-	createLights() ;
-	peuplerScene() ;  
-
-	set_FPS_mode(scene, canvas,camera) ;
-	
-	window.addEventListener("resize", function(){engine.resize();}) ; 
-
-	window.addEventListener('click',function(event){
-		var pickResult=scene.pick(event.clientX, event.clientY);
-		distance+=1;
-		//distance = BABYLON.Vector3.Distance(camera.position, pickResult.pickedMesh.position);
-		interact(pickResult);
-	});
-
-	window.addEventListener('mousemove',function(event){
-		distance+=1;
-		//nom.text = distance;
-		//var pickResult=scene.pick(event.clientX, event.clientY)
-		//distance = BABYLON.Vector3.distance(camera.position, pickResult.pickedMesh.position);
-	});
-
-	var maBox= new BABYLON.Mesh.CreateBox("box_1",5,scene);
-
-	scene.registerBeforeRender(function(){
-			temps=temps+(1/engine.getFps())
-			maBox.rotation.y=vitesseRotation*temps;
-			}); 
-
-	engine.runRenderLoop(function(){
-		let dt = engine.getDeltaTime();
-		// whatchObject(dt);
-		scene.render();
-	}); 
-}
-
-
-function interact(pickResult)
+function init()
 {
-	
-	if (pickResult.hit)
+	canvas = document.getElementById("renderCanvas");
+	engine = new BABYLON.Engine(canvas,true);
+	scene  = creerScene();
+	camera = creerCamera("camera",{}, scene);
+
+	// Musique fond
+	var son = new BABYLON.Sound("son", "assets/musiques/piano.mp3", scene, null, {loop: true, autoPlay: true});
+	son.setVolume(1);
+
+	createLights();
+	peuplerScene();
+
+	var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+	reticle = new BABYLON.GUI.Ellipse();
+	reticle.width = "10px";
+	reticle.height = "10px";
+	reticle.color = "red";
+	reticle.thickness = 1;
+	reticle.background = "red";
+	advancedTexture.addControl(reticle);
+
+	set_FPS_mode(scene, canvas,camera);
+
+	window.addEventListener("resize", function()
 	{
-		if(pickResult.pickedMesh.metadata.type == 'teleporter')
-		{
-			//camera.position = pickResult.pickedPoint;
-			var animation = new BABYLON.Animation("camera","position",30,BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
-			var keys = [];
-			keys.push({
-			 frame: 0,
-			 value: camera.position
-			});
-			keys.push({
-			 frame: 100,
-			 value: pickResult.pickedPoint
-			});
-			animation.setKeys(keys);
-			camera.animations.push(animation);
-			scene.beginAnimation(camera, 0, 100, false);
-		}
-		else 
-		{
-			sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
-			sphere.position = pickResult.pickedPoint ;
-		}
-	}
+		let dt = engine.getDeltaTime();
+		engine.resize();
+	});
+
+	engine.runRenderLoop(function(){scene.render();});
 }
 
-
-function createLights(){
-	var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(5,5,5), scene) ; 
+function createLights()
+{
+	var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(5,5,5), scene);
 }
 
-function peuplerScene(){
-
+function peuplerScene()
+{
 	// Dimensions musée
 	var hauteurMusee = 10.0;
 	var hauteurSalle = hauteurMusee/2;
@@ -131,173 +55,189 @@ function peuplerScene(){
 	var largeurMusee = 30.0;
 	var largeurSalle = largeurMusee/2;
 
-	// Création des materiaux
-	var materiauRouge = creerMateriauSimple("rouge",{couleur:new BABYLON.Color3(0.8,0.1,0.1)},scene) ;
-	var materiauCloison = creerMateriauSimple("mat-cloison",{texture:"assets/textures/murs.jpg"}, scene) ; 
-	var materiauSol = creerMateriauSimple("mat-sol",{texture:"assets/textures/solCarrelage.jpg"}, scene) ; 
+	var materiauSolInterieur = creerMateriauSimple("materiauSolInterieur",{texture:"assets/textures/solCarrelage.jpg"}, scene);
+	var materiauCloisonInterieur = new BABYLON.StandardMaterial("blanc",scene);
+	var materiauCloisonExterieur = creerMateriauSimple("materiauCloisonExterieur",{texture:"assets/textures/murs.jpg"}, scene);
+	var materiauMarche = creerMateriauSimple("materiauMarche",{texture:"assets/textures/parquet.jpg"}, scene);
 
-	sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
-	sphere.position =  new BABYLON.Vector3(0,2,5) ;
+	// Création des sols 
+	var solExterieur = creerSol("solExterieur",{},scene);
 
-	// Création du sol
-	var sol = creerSol("sol",{},scene) ; 
+	var solRDC = creerCloison("solRDC", {hauteur:largeurMusee, largeur:largeurMusee, materiau:materiauSolInterieur}, scene) 
+	solRDC.position = new BABYLON.Vector3(0,0.001,-largeurSalle);
+	solRDC.rotation.x = Math.PI/2;
 
-	// Création du musée
-	var origine = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0}, scene) ;
-	origine.position = new BABYLON.Vector3(0,0,0) ;
+	var solEtage = creerCloison("solEtage", {hauteur:largeurMusee, largeur:largeurSalle, materiau:materiauSolInterieur}, scene) 
+	solEtage.position = new BABYLON.Vector3(-largeurSalle/2,hauteurSalle,-largeurSalle);
+	solEtage.rotation.x = Math.PI/2;
 
-	/*//EXEMPLE : CREATION D'UN MUR AVEC UN TABLEAU DESSUS =============================
-
-	//Creation d un mur
-	var cloison1 = creerCloison("cloison1",{hauteur:3.0, largeur:5.0,materiau:materiauCloison},scene) ;
-	cloison1.position = new BABYLON.Vector3(5,0,-5) ; 
-	cloison1.rotation.y = Math.PI/3 ;
-
-	// Création d un tableau
-	var tableau = creerPoster("tableau1",{tableau:"assets/tableaux/Berthe.jpg"},scene) ;
-	tableau.parent = cloison1 ; // on accroche le tableau à la cloison 
-	tableau.position.z = -0.1  ;  
-	tableau.position.y = 1.7 ; 
-	//================================================================================*/
-
-	var mur = creerCloison("cloison",{hauteur:1.0,largeur:2.0,materiau:materiauRouge},scene) ; 
-	mur.parent = origine;
-	mur.position = new BABYLON.Vector3(0,0,0) ; 
-
-	var tapis = creerCloison("tapis",{hauteur:15.0,largeur:4.0,materiau:materiauRouge},scene) ; 
-	tapis.parent = origine; 
-	tapis.position = new BABYLON.Vector3(0,0.01,0) ; 
-	tapis.rotation.x = Math.PI/2 ;
-
-	var tapis1 = creerCloison("tapis",{hauteur:3.0,largeur:6,materiau:materiauRouge},scene) ; 
-	tapis1.parent = origine;
-	tapis1.position = new BABYLON.Vector3(-3,0.005,7.5) ; 
-	tapis1.rotation.x = Math.PI/2 ;
-
-	var porte = creerPorte("entree",{hauteur:3.0,largeur:4,materiau:materiauRouge},scene) ;
-	porte.parent = origine;
-	porte.position = new BABYLON.Vector3(-3,0,7.5) ; 
-
-	//Création du sol RDC en 10*10 murs 
-	var nbFloorTile = 10;
-	for(var i=0; i< nbFloorTile; i++)
-	{
-		for(var j=0; j< nbFloorTile; j++)
-		{
-			var sol = creerCloison("sol",{hauteur:largeurMusee/nbFloorTile,largeur:largeurMusee/nbFloorTile,materiau:materiauSol},scene) ;
-			sol.parent = origine;
-			sol.position = new BABYLON.Vector3(-largeurSalle + largeurMusee/(2*nbFloorTile) + i*largeurMusee/(nbFloorTile), 0, j*largeurMusee/(nbFloorTile)) ; 
-			sol.rotation.x = Math.PI/2 ;
-		}
-	}
-
-	//Création du sol étage en 10*5 murs 
-	for(var i=0; i< nbFloorTile; i++)
-	{
-		for(var j=0; j< nbFloorTile/2; j++)
-		{
-			var sol = creerCloison("sol",{hauteur:largeurMusee/nbFloorTile,largeur:largeurMusee/nbFloorTile,materiau:materiauSol},scene) ;
-			sol.parent = origine;
-			sol.position = new BABYLON.Vector3(-largeurSalle + largeurMusee/(2*nbFloorTile) + i*largeurMusee/(nbFloorTile), hauteurSalle, largeurSalle+j*largeurMusee/(nbFloorTile)) ; 
-			sol.rotation.x = Math.PI/2 ;
-		}
-	}
-
-	dimensionsMursExterieurs = new BABYLON.Vector2(hauteurMusee,largeurMusee);
-	// dimensionsMurInterieur = new BABYLON.Vector2(hauteurSalle,largeurMusee);
-
-	var materiauBetonMursExterieurs = creerMateriauSimple("matBeton0",{texture:"assets/textures/concrete.jpg"}, scene) ; 
-	materiauBetonMursExterieurs.diffuseTexture.uScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMursExterieurs.x;
-	materiauBetonMursExterieurs.diffuseTexture.vScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMursExterieurs.y;
-
-	var materiauBetonMurInterieur = creerMateriauSimple("matBeton1",{texture:"assets/textures/concrete.jpg"}, scene) ; 
-	// materiauBetonMurInterieur.diffuseTexture.uScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.x;
-	// materiauBetonMurInterieur.diffuseTexture.vScale = 3 * Math.max(dimensionsMursExterieurs.x,dimensionsMursExterieurs.y) / dimensionsMurInterieur.y;
+	//var solInterieur = creerSol("solInterieur", {largeur:30, profondeur:30, materiau:materiauSolInterieur}, scene) 
+	//solInterieur.position = = new BABYLON.Vector3(0,0.01,0); 
 
 	// Création des cloisons du musée
-	var cloisonEst = creerCloison("cloisonEst",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
-	cloisonEst.parent = origine;
-	cloisonEst.position = new BABYLON.Vector3(0,0,0);
 
-	var cloisonOuest = creerCloison("cloisonOuest",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
-	cloisonOuest.parent = origine;
-	cloisonOuest.position = new BABYLON.Vector3(0,0,largeurMusee);
+	var cloisonEst = creerCloison("cloisonEst",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonEst.position = new BABYLON.Vector3(0,0,largeurSalle);
 
-	var cloisonNord = creerCloison("cloisonNord",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
-	cloisonNord.parent = origine;
-	cloisonNord.position = new BABYLON.Vector3(-largeurSalle,0,largeurSalle); 
+	var cloisonOuest = creerCloison("cloisonOuest",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonOuest.position = new BABYLON.Vector3(0,0,-largeurSalle);
+
+	var cloisonNord = creerCloison("cloisonNord",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonNord.position = new BABYLON.Vector3(-largeurSalle,0,0); 
 	cloisonNord.rotation.y = Math.PI/2;
 
-	var cloisonSud = creerCloison("cloisonSud",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauBetonMursExterieurs}, scene);
-	cloisonSud.parent = origine;
-	cloisonSud.position = new BABYLON.Vector3(largeurSalle,0,largeurSalle);
+	var cloisonSud = creerCloison("cloisonSud",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonSud.position = new BABYLON.Vector3(largeurSalle,0,0);
 	cloisonSud.rotation.y = Math.PI/2;
 
 	// Création cloisons salles rez-de-chaussée
+	var cloisonsSalles = [];
 	for(var i = 0; i < 2; i++)
 	{
-		var cloison = creerCloison("cloisonSalles"+i, {hauteur:hauteurSalle, largeur:largeurSalle, materiau:materiauBetonMurInterieur}, scene) ; 
-		cloison.parent = origine;
-		cloison.position = new BABYLON.Vector3(-largeurMusee/6+largeurMusee/3*i,0,largeurMusee-largeurSalle/2) ; 
-		cloison.rotation.y = Math.PI/2;
+		var cloison = creerCloison("cloisonSalles"+i, {hauteur:hauteurSalle, largeur:largeurSalle, materiau:materiauCloisonInterieur}, scene) ; 
+		cloison.position = new BABYLON.Vector3(-largeurSalle/2,0,-largeurMusee/6+largeurMusee/3*i) ; 
+		cloisonsSalles.push(cloison);
 	}
 
 	var largeurCloison = largeurMusee/10;
+	var cloisonsSallesHall = [];
 
-	var cloison = creerCloison("cloisonSalleHall0", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
-	cloison.parent = origine;
-	cloison.position = new BABYLON.Vector3(-largeurSalle+largeurCloison/2,0,largeurSalle);
-
-	var cloison = creerCloison("cloisonSalleHall3", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
-	cloison.parent = origine;
-	cloison.position = new BABYLON.Vector3(largeurSalle-largeurCloison/2,0,largeurSalle);
+	var cloison = creerCloison("cloisonSallesHall0", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+	cloison.position = new BABYLON.Vector3(0,0,-largeurSalle+largeurCloison/2);
+	cloison.rotation.y = Math.PI/2;
+	cloisonsSallesHall.push(cloison);
 
 	for(var i = 1; i < 3; i++)
 	{
-		var cloison = creerCloison("cloisonSalleHall"+i, {hauteur: hauteurSalle, largeur: 2*largeurCloison, materiau: materiauBetonMurInterieur}, scene) ; 
-		cloison.parent = origine;
-		cloison.position = new BABYLON.Vector3(-largeurMusee/6+largeurMusee/3*(i-1),0,largeurSalle);
+		var cloison = creerCloison("cloisonSallesHall"+i, {hauteur: hauteurSalle, largeur: 2*largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+		cloison.position = new BABYLON.Vector3(0,0,-largeurMusee/6+largeurMusee/3*(i-1));
+		cloison.rotation.y = Math.PI/2;
+		cloisonsSallesHall.push(cloison);
 	}
 
-	// // Création de la cloison de la mezzanine
-	var cloisonMezzanine = creerCloison("cloisonMezzanine",{hauteur:hauteurSalle, largeur:largeurMusee-largeurCloison, materiau:materiauBetonMurInterieur}, scene);
-	cloisonMezzanine.parent = origine;
-	cloisonMezzanine.position = new BABYLON.Vector3(largeurCloison/2,hauteurSalle,largeurSalle);
+	var cloison = creerCloison("cloisonSallesHall3", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+	cloison.position = new BABYLON.Vector3(0,0,largeurSalle-largeurCloison/2);
+	cloison.rotation.y = Math.PI/2;
+	cloisonsSallesHall.push(cloison);
 
-	//https://www.babylonjs-playground.com/#T6NP3F#0 EXEMPLE D'UTILISATION DE LA SOUSTRACTION DE MESH
-	
-	// Escaliers
-	var stairsPosition = new BABYLON.Vector3(-7.8, 0, largeurSalle-0.5);
-	var angle = Math.PI ;
-	var rayon = 4;
-	var steps = 16;
-	for(var i=-0; i< steps; i++){
-		angle += Math.PI/(2*steps);
-		var step = creerCloison("step",{hauteur:3.0,largeur:1.0,materiau:materiauRouge},scene) ;
-		step.parent = origine;
-		step.rotation.y = angle;
-		step.position = new BABYLON.Vector3(stairsPosition.x+rayon*Math.sin(angle),stairsPosition.y + 5*i/steps+0.01, stairsPosition.z+rayon*Math.cos(angle)) ; 
-		step.rotation.x = Math.PI/2 ;
-
-		var stepJoiner = creerCloison("stepJoiner",{hauteur:3.0,largeur:5/steps,materiau:materiauSol},scene) ;
-		stepJoiner.parent = origine;
-		stepJoiner.position = new BABYLON.Vector3(stairsPosition.x+(rayon+3)*Math.sin(angle-Math.PI/50),stairsPosition.y+5*i/steps-0.2, stairsPosition.z+(rayon+3)*Math.cos(angle-Math.PI/50)) ;
-		stepJoiner.rotation.z = -Math.PI/2 ;
-		stepJoiner.rotation.y = Math.PI/2 + angle;
-
-		var x = creerCloison("x",{hauteur:1.5,largeur:5/steps,materiau:materiauSol},scene) ;
-		x.parent = origine;
-		x.position = new BABYLON.Vector3(stairsPosition.x+(rayon+3)*Math.sin(angle),stairsPosition.y+ 5*i/steps+0.01, stairsPosition.z+(rayon+3)*Math.cos(angle)) ; 
-		x.rotation.y = angle;
-
-		var y = creerCloison("y",{hauteur:1.5,largeur:5/steps,materiau:materiauSol},scene) ;
-		y.parent = origine;
-		y.position = new BABYLON.Vector3(stairsPosition.x+(rayon)*Math.sin(angle),stairsPosition.y+5*i/steps+0.01, stairsPosition.z+(rayon)*Math.cos(angle)) ; 
-		y.rotation.y = angle;
+	//Création des escaliers
+	var largeurMarche = 1;
+	var longueurMarche = largeurCloison;
+	for(var i = 0; i < 11; i++)
+	{
+		var marche = creerCloison("marche"+i, {hauteur: longueurMarche, largeur: largeurMarche, materiau: materiauMarche}, scene);
+		marche.position = new BABYLON.Vector3(largeurMarche/2+2*largeurMarche/3*i,hauteurSalle-hauteurSalle/10*i,-largeurMusee/2);
+		marche.rotation.x = Math.PI/2;
 	}
-	
-	// Création d une sphere
-	var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0}, scene) ; 
+
+	// Création de la cloison de la mezzanine
+	var cloisonMezzanine = creerCloison("cloisonMezzanine",{hauteur:hauteurSalle, largeur:largeurMusee-largeurCloison, materiau:materiauCloisonInterieur}, scene);
+	cloisonMezzanine.position = new BABYLON.Vector3(0,hauteurSalle,largeurCloison/2);
+	cloisonMezzanine.rotation.y = Math.PI/2;
+
+	// Création des tableaux
+	var tableaux = [];
+
+	var berthe = creerPoster("tableauBerthe",{tableau:"assets/tableaux/Berthe.jpg"},scene);
+	berthe.parent = cloisonSud; // On accroche le tableau à la cloison
+	berthe.position.z = -0.1;
+	berthe.position.y = 1.7;
+
+	var joconde = creerPoster("tableauJoconde",{tableau:"assets/tableaux/joconde.png"},scene);
+	joconde.parent = cloisonsSalles[0]; // On accroche le tableau à la cloison
+	joconde.position.z = -0.1;
+	joconde.position.y = 1.7;
+	joconde.position.x = largeurSalle/4;
+
+	var cri = creerPoster("tableauCri",{tableau:"assets/tableaux/cri.jpg"},scene);
+	cri.parent = cloisonsSalles[0]; // On accroche le tableau à la cloison
+	cri.position.z = -0.1;
+	cri.position.y = 1.7;
+	cri.position.x = -largeurSalle/4;
+
+	tableaux.push(berthe, joconde, cri);
+
+	// Création des photos
+	var photos = [];
+
+	var monroe = creerPoster("photoMonroe",{tableau:"assets/photos/monroe.jpg"},scene);
+	monroe.parent = cloisonNord; // On accroche le tableau à la cloison
+	monroe.rotation.y = Math.PI;
+	monroe.position.z = 0.1;
+	monroe.position.y = hauteurSalle + 1.7;
+	monroe.position.x = 2*largeurMusee/5;
+
+	var ali = creerPoster("photoAli",{tableau:"assets/photos/ali.jpg"},scene);
+	ali.parent = cloisonNord; // On accroche le tableau à la cloison
+	ali.rotation.y = Math.PI;
+	ali.position.z = 0.1;
+	ali.position.y = hauteurSalle + 1.7;
+	ali.position.x = largeurMusee/5;
+
+	var beattles = creerPoster("photoBeattles",{tableau:"assets/photos/beattles.jpg"},scene);
+	beattles.parent = cloisonNord; // On accroche le tableau à la cloison
+	beattles.rotation.y = Math.PI;
+	beattles.position.z = 0.1;
+	beattles.position.y = hauteurSalle + 1.7;
+
+	var jordan = creerPoster("photoJordan",{tableau:"assets/photos/jordan.jpg"},scene);
+	jordan.parent = cloisonNord; // On accroche le tableau à la cloison
+	jordan.rotation.y = Math.PI;
+	jordan.position.z = 0.1;
+	jordan.position.y = hauteurSalle + 1.7;
+	jordan.position.x = -largeurMusee/5;
+
+	var dali = creerPoster("photoDali",{tableau:"assets/photos/dali.jpg"},scene);
+	dali.parent = cloisonNord; // On accroche le tableau à la cloison
+	dali.rotation.y = Math.PI;
+	dali.position.z = 0.1;
+	dali.position.y = hauteurSalle + 1.7;
+	dali.position.x = -2*largeurMusee/5;
+
+	var girl = creerPoster("photoAfghanGirl",{tableau:"assets/photos/girl.jpg"},scene);
+	girl.parent = cloisonMezzanine; // On accroche le tableau à la cloison
+	girl.position.z = -0.1;
+	girl.position.y = 1.7;
+	girl.position.x = -largeurMusee/4;
+
+	var marathon = creerPoster("photoMarathon",{tableau:"assets/photos/marathon.jpg"},scene);
+	marathon.parent = cloisonMezzanine; // On accroche le tableau à la cloison
+	marathon.position.z = -0.1;
+	marathon.position.y = 1.7;
+
+	var kiss = creerPoster("photoKiss",{tableau:"assets/photos/kiss.jpg"},scene);
+	kiss.parent = cloisonMezzanine; // On accroche le tableau à la cloison
+	kiss.position.z = -0.1;
+	kiss.position.y = 1.7;
+	kiss.position.x = largeurMusee/4;
+
+	var workers = creerPoster("photoWorkers",{tableau:"assets/photos/workers.jpg"},scene);
+	workers.parent = cloisonOuest; // On accroche le tableau à la cloison
+	workers.rotation.y = Math.PI;
+	workers.position.z = 0.1;
+	workers.position.y = hauteurSalle + 1.7;
+	workers.position.x = -largeurSalle/3;
+
+	var earth = creerPoster("photoTerre",{tableau:"assets/photos/earth.jpg"},scene);
+	earth.parent = cloisonOuest; // On accroche le tableau à la cloison
+	earth.rotation.y = Math.PI;
+	earth.position.z = 0.1;
+	earth.position.y = hauteurSalle + 1.7;
+	earth.position.x = -2*largeurSalle/3;
+
+	var power = creerPoster("photoPower",{tableau:"assets/photos/power.jpg"},scene);
+	power.parent = cloisonEst; // On accroche le tableau à la cloison
+	power.position.z = -0.1;
+	power.position.y = hauteurSalle + 1.7;
+	power.position.x = -2*largeurSalle/3;
+
+	var marin = creerPoster("photoMarin",{tableau:"assets/photos/marin.jpg"},scene);
+	marin.parent = cloisonEst; // On accroche le tableau à la cloison
+	marin.position.z = -0.1;
+	marin.position.y = hauteurSalle + 1.7;
+	marin.position.x = -largeurSalle/3;
+
+	photos.push(monroe, ali, jordan, beattles, dali, girl, marathon, kiss, workers, earth, power, marin);
 }
 
 var isLocked = false ; 
