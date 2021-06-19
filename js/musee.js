@@ -76,11 +76,6 @@ function interact(pickResult)
 			camera.animations.push(animation);
 			scene.beginAnimation(camera, 0, 100, false);
 		}
-		else 
-		{
-			sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
-			sphere.position = pickResult.pickedPoint ;
-		}
 	}
 }
 

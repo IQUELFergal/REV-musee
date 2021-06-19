@@ -187,32 +187,12 @@ function creerPorteDouble(nom,opts,scn){
 
 	var group = new BABYLON.TransformNode("group-"+nom);
 	let materiau   = options.matPorte || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
-	//let materiauEncadrure   = options.matEncadrure || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
 
 	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scn) ;
 	materiauInvisible.alpha = 0.0001 ;
 
 	var encadrure = creerEncadrure("encadrure",options,scn);
 	encadrure.parent = group;
-	/*var encadrure = new BABYLON.TransformNode("encadrure-"+nom);
-	encadrure.parent = group;
-	let encadrureG = BABYLON.MeshBuilder.CreateBox(nom+"encadrureG",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
-	encadrureG.material = materiau ;
-	encadrureG.parent = encadrure;
-	encadrureG.checkCollisions = true ;
-	encadrureG.position.y = hauteur / 2.0 ;
-	encadrureG.position.x = -largeur / 2 ;
-	let encadrureH = BABYLON.MeshBuilder.CreateBox(nom+"encadrureH",{width:largeur+epaisseur*2,height:0.2,depth:epaisseur*2},scn) ;
-	encadrureH.material = materiau ;
-	encadrureH.parent = encadrure;
-	encadrureH.checkCollisions = true ;
-	encadrureH.position.y = hauteur + epaisseur ;
-	let encadrureD = BABYLON.MeshBuilder.CreateBox(nom+"encadrureD",{width:epaisseur*2,height:hauteur,depth:epaisseur*2},scn) ;
-	encadrureD.material = materiau ;
-	encadrureD.parent = encadrure;
-	encadrureD.checkCollisions = true ;
-	encadrureD.position.y = hauteur / 2.0 ;
-	encadrureD.position.x = largeur / 2 ;*/
 
 	let porteG = BABYLON.MeshBuilder.CreateBox("porteG",{width:largeur/2,height:hauteur,depth:epaisseur-0.01},scn) ;
 	porteG.material = materiau ;
@@ -232,6 +212,8 @@ function creerPorteDouble(nom,opts,scn){
 	capteurPorte.parent = group;
 	capteurPorte.position.y = hauteur / 2.0 ;
 	capteurPorte.material = materiauInvisible ;
+
+
 	var openAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionEnterTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoubleDoor(scn, porteG, porteD, new BABYLON.Vector3(largeur/2,0,0));});
 	var closeAction = new BABYLON.ExecuteCodeAction({trigger : BABYLON.ActionManager.OnIntersectionExitTrigger,parameter : {mesh: capteurPorte}},function(){openCloseDoubleDoor(scn, porteG, porteD,new BABYLON.Vector3(0,0,0)) ;}) ;
 
