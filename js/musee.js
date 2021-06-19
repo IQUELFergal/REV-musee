@@ -112,20 +112,27 @@ function peuplerScene()
 	var largeurSalle = largeurMusee/2;
 
 	const materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
-	materiauInvisible.alpha = 0.0001 ;
-	var materiauPorte = creerMateriauSimple("rouge",{couleur:new BABYLON.Color3(0.8,0.1,0.1)},scene) ;
+	materiauInvisible.alpha = 0.5;//0.0001 ;
+	var materiauEncadrure = creerMateriauSimple("rouge",{couleur:new BABYLON.Color3(0.1,0.1,0.1)},scene) ;
+	var materiauPorte = creerMateriauSimple("materiauMarche",{texture:"assets/textures/parquet.jpg"}, scene);
 	var materiauSolInterieur = creerMateriauSimple("materiauSolInterieur",{texture:"assets/textures/solCarrelage.jpg"}, scene);
 	var materiauCloisonInterieur = new BABYLON.StandardMaterial("blanc",scene);
 	var materiauCloisonExterieur = creerMateriauSimple("materiauCloisonExterieur",{texture:"assets/textures/murs.jpg"}, scene);
 	var materiauMarche = creerMateriauSimple("materiauMarche",{texture:"assets/textures/parquet.jpg"}, scene);
 
-	// Création d'un téléporteur
-	sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
-	sphere.position =  new BABYLON.Vector3(0,2,5) 
 
 	// Création du musée
-	var origine = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0, materiau:materiauPorte}, scene) ;
+	var origine = new BABYLON.TransformNode("origine");
 	origine.position = new BABYLON.Vector3(0,0,0) ;
+
+	// Création d'un téléporteur
+	sphere = creerTeleporteur("amer", {diameter:1.0}, scene) ;
+	sphere.parent = origine;
+	sphere.position =  new BABYLON.Vector3(8,2,-13.5) 
+
+	sphere = creerTeleporteur("amer", {diameter:1.0}, scene) ;
+	sphere.parent = origine;
+	sphere.position =  new BABYLON.Vector3(0,8,-13.5) 
 
 	// Création des sols 
 	var solExterieur = creerSol("solExterieur",{},scene);
@@ -198,14 +205,25 @@ function peuplerScene()
 	cloisonsSallesHall.push(cloison);
 
 	//Création des escaliers
+
+	var rampeInvisible = BABYLON.MeshBuilder.CreateBox("rampe",{width:3,height:8.5,depth:0.1},scene);
+	rampeInvisible.material = materiauInvisible;
+	rampeInvisible.parent = origine;
+	rampeInvisible.position = new BABYLON.Vector3(3.5,2.4,-13.5);
+	rampeInvisible.rotation.x = -Math.PI/3.4;
+	rampeInvisible.rotation.y = Math.PI/2;
+	rampeInvisible.checkCollisions = true;
 	var largeurMarche = 1;
 	var longueurMarche = largeurCloison;
 	for(var i = 0; i < 11; i++)
 	{
-		var marche = creerCloison("marche"+i, {hauteur: longueurMarche, largeur: largeurMarche, materiau: materiauMarche}, scene);
+		var marche = BABYLON.MeshBuilder.CreateBox("marche"+i,{width:largeurMarche,height:longueurMarche,depth:0.1},scene);
+		marche.material = materiauMarche;
 		marche.parent = origine;
-		marche.position = new BABYLON.Vector3(largeurMarche/2+2*largeurMarche/3*i,hauteurSalle-hauteurSalle/10*i,-largeurMusee/2);
+		marche.position = new BABYLON.Vector3(largeurMarche/2+2*largeurMarche/3*i,hauteurSalle-hauteurSalle/10*i,-largeurMusee/2 + 1.5);
 		marche.rotation.x = Math.PI/2;
+		marche.checkCollisions = false;
+
 	}
 
 	// Création de la cloison de la mezzanine
@@ -214,25 +232,25 @@ function peuplerScene()
 	cloisonMezzanine.position = new BABYLON.Vector3(0,hauteurSalle,largeurCloison/2);
 	cloisonMezzanine.rotation.y = Math.PI/2;
 
-	var encadrure = creerEncadrure("encadrure",{hauteur:4.8,largeur:3,materiau:materiauPorte},scene);
+	var encadrure = creerEncadrure("encadrure",{hauteur:4.8,largeur:3,matEncadrure:materiauEncadrure},scene);
 	encadrure.parent = origine;
 	encadrure.position = new BABYLON.Vector3(0,5,-13.5) ;
 	encadrure.rotation.y = Math.PI/2;
 
 	// Création des portes
-	var porteG = creerPorteDouble("entreeG",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	var porteG = creerPorteDouble("entreeG",{hauteur:5.0,largeur:4,matPorte:materiauPorte,matEncadrure:materiauEncadrure},scene) ;
 	porteG.parent = origine;
 	porteG.position = new BABYLON.Vector3(0,0,-10) ; 
 	porteG.rotation.y = Math.PI/2; 
 	portes.push(porteG);
 
-	var porteM = creerPorteDouble("entreeM",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	var porteM = creerPorteDouble("entreeM",{hauteur:5.0,largeur:4,matPorte:materiauPorte,matEncadrure:materiauEncadrure},scene) ;
 	porteM.parent = origine;
 	porteM.position = new BABYLON.Vector3(0,0,0) ; 
 	porteM.rotation.y = Math.PI/2;
 	portes.push(porteM);
 
-	var porteD = creerPorteDouble("entreeD",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	var porteD = creerPorteDouble("entreeD",{hauteur:5.0,largeur:4,matPorte:materiauPorte,matEncadrure:materiauEncadrure},scene) ;
 	porteD.parent = origine;
 	porteD.position = new BABYLON.Vector3(0,0,10) ;
 	porteD.rotation.y = Math.PI/2;

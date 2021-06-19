@@ -18,15 +18,11 @@ function updateReticle(reticle) {
 	if (pickResult.hit) {
 		if(pickResult.distance < 4){
 			let mesh = pickResult.pickedMesh;
-			if (mesh.nom === "poster"){
+			if (mesh.nom == "poster"){
 				reticle.color = "Green";
 				reticle.background = "Green";
 			} 
 		}
-		/*if (pickResult.pickedMesh.metadata.type == 'teleporter'){
-			reticle.color = "Green";
-			reticle.background = "Green";
-		}*/
 	} else {
 		reticle.color = "red"
 		reticle.background = "red";
@@ -190,7 +186,8 @@ function creerPorteDouble(nom,opts,scn){
 	let epaisseur = options.epaisseur || 0.1 ;
 
 	var group = new BABYLON.TransformNode("group-"+nom);
-	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+	let materiau   = options.matPorte || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+	//let materiauEncadrure   = options.matEncadrure || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
 
 	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scn) ;
 	materiauInvisible.alpha = 0.0001 ;
@@ -269,7 +266,7 @@ function creerEncadrure(nom,opts,scn){
 	let epaisseur = options.epaisseur || 0.1 ;
 
 	var group = new BABYLON.TransformNode("group-"+nom);
-	let materiau   = options.materiau || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
+	let materiau   = options.matEncadrure || new BABYLON.StandardMaterial("materiau-pos"+nom,scn);
 
 	var materiauInvisible = new BABYLON.StandardMaterial("invisible",scn) ;
 	materiauInvisible.alpha = 0.5 ;
