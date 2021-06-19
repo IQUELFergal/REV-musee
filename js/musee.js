@@ -12,6 +12,7 @@ function init()
 	engine = new BABYLON.Engine(canvas,true);
 	scene  = creerScene();
 	camera = creerCamera("camera",{}, scene);
+	reticle = createReticle();
 
 	// Musique fond
 	var son = new BABYLON.Sound("son", "assets/musiques/piano.mp3", scene, null, {loop: true, autoPlay: true});
@@ -20,17 +21,7 @@ function init()
 	createLights();
 	peuplerScene();
 
-	var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-	reticle = new BABYLON.GUI.Ellipse();
-	reticle.width = "10px";
-	reticle.height = "10px";
-	reticle.color = "red";
-	reticle.thickness = 1;
-	reticle.background = "red";
-	advancedTexture.addControl(reticle);
-
-	set_FPS_mode(scene, canvas,camera);
+	set_FPS_mode(scene,canvas,camera);
 
 	window.addEventListener("resize", function()
 	{
@@ -38,7 +29,10 @@ function init()
 		engine.resize();
 	});
 
-	engine.runRenderLoop(function(){scene.render();});
+	engine.runRenderLoop(function(){
+		updateReticle(reticle);
+		scene.render();
+	});
 }
 
 function createLights()
@@ -138,11 +132,6 @@ function peuplerScene()
 	// Création des tableaux
 	var tableaux = [];
 
-	var berthe = creerPoster("tableauBerthe",{tableau:"assets/tableaux/Berthe.jpg"},scene);
-	berthe.parent = cloisonSud; // On accroche le tableau à la cloison
-	berthe.position.z = -0.1;
-	berthe.position.y = 1.7;
-
 	var joconde = creerPoster("tableauJoconde",{tableau:"assets/tableaux/joconde.png"},scene);
 	joconde.parent = cloisonsSalles[0]; // On accroche le tableau à la cloison
 	joconde.position.z = -0.1;
@@ -155,7 +144,28 @@ function peuplerScene()
 	cri.position.y = 1.7;
 	cri.position.x = -largeurSalle/4;
 
-	tableaux.push(berthe, joconde, cri);
+	var coquelicots = creerPoster("tableauCoquelicots",{tableau:"assets/tableaux/coquelicots.jpg"},scene);
+	coquelicots.parent = cloisonOuest; // On accroche le tableau à la cloison
+	coquelicots.rotation.y = Math.PI;
+	coquelicots.position.z = 0.1;
+	coquelicots.position.y = 1.7;
+	coquelicots.position.x = -largeurSalle/4;
+
+	var nuit = creerPoster("tableauNuit",{tableau:"assets/tableaux/nuit.jpg"},scene);
+	nuit.parent = cloisonOuest; // On accroche le tableau à la cloison
+	nuit.rotation.y = Math.PI;
+	nuit.position.z = 0.1;
+	nuit.position.y = 1.7;
+	nuit.position.x = -3*largeurSalle/4;
+
+	var berthe = creerPoster("tableauBerthe",{tableau:"assets/tableaux/berthe.jpg"},scene);
+	berthe.parent = cloisonNord; // On accroche le tableau à la cloison
+	berthe.rotation.y = Math.PI;
+	berthe.position.z = 0.1;
+	berthe.position.y = 1.7;
+	berthe.position.x = largeurMusee/3;
+
+	tableaux.push(berthe, joconde, cri, coquelicots, nuit, berthe);
 
 	// Création des photos
 	var photos = [];

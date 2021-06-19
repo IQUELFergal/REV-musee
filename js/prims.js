@@ -1,4 +1,35 @@
+function createReticle()
+{
+	reticle = new BABYLON.GUI.Ellipse();
+	reticle.width = "10px";
+	reticle.height = "10px";
+	reticle.color = "red";
+	reticle.thickness = 1;
+	reticle.background = "red";
 
+	var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+	advancedTexture.addControl(reticle);
+
+	return reticle;
+}
+
+function updateReticle(reticle) {
+	var pickResult = scene.pick(window.innerWidth/2, window.innerHeight/2);
+	if (pickResult.hit && pickResult.distance < 4) {
+		let mesh = pickResult.pickedMesh;
+		if (mesh.nom === "poster"){
+			reticle.color = "Green";
+			reticle.background = "Green";
+		} else {
+			reticle.color = "red"
+			reticle.background = "red";
+		}
+	} else {
+		reticle.color = "red";
+		reticle.background = "red";
+	}
+	return reticle;
+}
 
 function creerScene(){
 	var scn = new BABYLON.Scene(engine);
@@ -107,13 +138,14 @@ function creerPoster(nom,opts,scn){
 	let textureName = options["tableau"] || ""; 
 
 	var group = new BABYLON.TransformNode("group-"+nom)
-	var tableau1 = BABYLON.MeshBuilder.CreatePlane("tableau-" + nom, {width:largeur,height:hauteur}, scn);
-	tableau1.parent = group ; 
-	tableau1.position.y = hauteur/2.0 ; 
+	var poster = BABYLON.MeshBuilder.CreatePlane("poster-" + nom, {width:largeur,height:hauteur}, scn);
+	poster.parent = group ; 
+	poster.position.y = hauteur/2.0 ;
+	poster.nom = "poster";
 
 	var mat = new BABYLON.StandardMaterial("tex-tableau-" + nom, scn);
 	mat.diffuseTexture = new BABYLON.Texture(textureName, scn);
-	tableau1.material = mat;
+	poster.material = mat;
 
 	return group ; 
 
