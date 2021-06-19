@@ -5,6 +5,7 @@ var timeSpendOnFocusObject = 0;
 var focusObject;
 const focusTime = 3000;
 var reticle;
+var portes = [];
 
 function init()
 {
@@ -13,6 +14,14 @@ function init()
 	scene  = creerScene();
 	camera = creerCamera("camera",{}, scene);
 	reticle = createReticle();
+
+	// Volume virtuel associé à la caméra
+	const materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	materiauInvisible.alpha = 0.0001 ;
+	const block = BABYLON.MeshBuilder.CreateBox("block",{width:1,height:1,depth:1},scene) ;
+	block.material = materiauInvisible ;
+	block.actionManager = new BABYLON.ActionManager(scene) ;
+	block.parent = camera ;
 
 	// Musique fond
 	var son = new BABYLON.Sound("son", "assets/musiques/piano.mp3", scene, null, {loop: true, autoPlay: true});
@@ -29,11 +38,64 @@ function init()
 		engine.resize();
 	});
 
+	window.addEventListener('click',function(event){
+		var pickResult=scene.pick(window.outerWidth/2, window.outerHeight/2);
+		interact(pickResult);
+	});
+
+	//Interaction portes
+	for(var i = 0; i < portes.length; i++)
+	{
+		block.actionManager.registerAction(portes[i].metadata.openAction) ;
+		block.actionManager.registerAction(portes[i].metadata.closeAction) ;
+	}
+
 	engine.runRenderLoop(function(){
 		updateReticle(reticle);
 		scene.render();
 	});
 }
+
+function interact(pickResult)
+{
+	if (pickResult.hit)
+	{
+		if(pickResult.pickedMesh.metadata.type == 'teleporter')
+		{
+			var animation = new BABYLON.Animation("camera","position",30,BABYLON.Animation.ANIMATIONTYPE_VECTOR3);
+			var keys = [];
+			keys.push({
+			 frame: 0,
+			 value: camera.position
+			});
+			keys.push({
+			 frame: 100,
+			 value: pickResult.pickedPoint
+			});
+			animation.setKeys(keys);
+			camera.animations.push(animation);
+			scene.beginAnimation(camera, 0, 100, false);
+		}
+		else 
+		{
+			sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
+			sphere.position = pickResult.pickedPoint ;
+		}
+	}
+}
+
+function getChild(node, name){
+	var children = node.getChildren();
+	for(var i = 0; i < children.length; i++)
+	{
+		if (children[i].name == name)
+		{
+			return children[i];
+		}
+	}
+	return node;
+}
+
 
 function createLights()
 {
@@ -49,19 +111,32 @@ function peuplerScene()
 	var largeurMusee = 30.0;
 	var largeurSalle = largeurMusee/2;
 
+	const materiauInvisible = new BABYLON.StandardMaterial("invisible",scene) ;
+	materiauInvisible.alpha = 0.0001 ;
+	var materiauPorte = creerMateriauSimple("rouge",{couleur:new BABYLON.Color3(0.8,0.1,0.1)},scene) ;
 	var materiauSolInterieur = creerMateriauSimple("materiauSolInterieur",{texture:"assets/textures/solCarrelage.jpg"}, scene);
 	var materiauCloisonInterieur = new BABYLON.StandardMaterial("blanc",scene);
 	var materiauCloisonExterieur = creerMateriauSimple("materiauCloisonExterieur",{texture:"assets/textures/murs.jpg"}, scene);
 	var materiauMarche = creerMateriauSimple("materiauMarche",{texture:"assets/textures/parquet.jpg"}, scene);
 
+	// Création d'un téléporteur
+	sphere = creerTeleporteur("sphere", {diameter:1.0}, scene) ;
+	sphere.position =  new BABYLON.Vector3(0,2,5) 
+
+	// Création du musée
+	var origine = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:1.0, materiau:materiauPorte}, scene) ;
+	origine.position = new BABYLON.Vector3(0,0,0) ;
+
 	// Création des sols 
 	var solExterieur = creerSol("solExterieur",{},scene);
 
 	var solRDC = creerCloison("solRDC", {hauteur:largeurMusee, largeur:largeurMusee, materiau:materiauSolInterieur}, scene) 
+	solRDC.parent = origine;
 	solRDC.position = new BABYLON.Vector3(0,0.001,-largeurSalle);
 	solRDC.rotation.x = Math.PI/2;
 
 	var solEtage = creerCloison("solEtage", {hauteur:largeurMusee, largeur:largeurSalle, materiau:materiauSolInterieur}, scene) 
+	solEtage.parent = origine;
 	solEtage.position = new BABYLON.Vector3(-largeurSalle/2,hauteurSalle,-largeurSalle);
 	solEtage.rotation.x = Math.PI/2;
 
@@ -71,16 +146,20 @@ function peuplerScene()
 	// Création des cloisons du musée
 
 	var cloisonEst = creerCloison("cloisonEst",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonEst.parent = origine;
 	cloisonEst.position = new BABYLON.Vector3(0,0,largeurSalle);
 
 	var cloisonOuest = creerCloison("cloisonOuest",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonOuest.parent = origine;
 	cloisonOuest.position = new BABYLON.Vector3(0,0,-largeurSalle);
 
 	var cloisonNord = creerCloison("cloisonNord",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonNord.parent = origine;
 	cloisonNord.position = new BABYLON.Vector3(-largeurSalle,0,0); 
 	cloisonNord.rotation.y = Math.PI/2;
 
 	var cloisonSud = creerCloison("cloisonSud",{hauteur:hauteurMusee, largeur:largeurMusee, materiau:materiauCloisonExterieur}, scene);
+	cloisonSud.parent = origine;
 	cloisonSud.position = new BABYLON.Vector3(largeurSalle,0,0);
 	cloisonSud.rotation.y = Math.PI/2;
 
@@ -89,6 +168,7 @@ function peuplerScene()
 	for(var i = 0; i < 2; i++)
 	{
 		var cloison = creerCloison("cloisonSalles"+i, {hauteur:hauteurSalle, largeur:largeurSalle, materiau:materiauCloisonInterieur}, scene) ; 
+		cloison.parent = origine;
 		cloison.position = new BABYLON.Vector3(-largeurSalle/2,0,-largeurMusee/6+largeurMusee/3*i) ; 
 		cloisonsSalles.push(cloison);
 	}
@@ -97,6 +177,7 @@ function peuplerScene()
 	var cloisonsSallesHall = [];
 
 	var cloison = creerCloison("cloisonSallesHall0", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+	cloison.parent = origine;
 	cloison.position = new BABYLON.Vector3(0,0,-largeurSalle+largeurCloison/2);
 	cloison.rotation.y = Math.PI/2;
 	cloisonsSallesHall.push(cloison);
@@ -104,12 +185,14 @@ function peuplerScene()
 	for(var i = 1; i < 3; i++)
 	{
 		var cloison = creerCloison("cloisonSallesHall"+i, {hauteur: hauteurSalle, largeur: 2*largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+		cloison.parent = origine;
 		cloison.position = new BABYLON.Vector3(0,0,-largeurMusee/6+largeurMusee/3*(i-1));
 		cloison.rotation.y = Math.PI/2;
 		cloisonsSallesHall.push(cloison);
 	}
 
 	var cloison = creerCloison("cloisonSallesHall3", {hauteur: hauteurSalle, largeur: largeurCloison, materiau: materiauCloisonInterieur}, scene) ; 
+	cloison.parent = origine;
 	cloison.position = new BABYLON.Vector3(0,0,largeurSalle-largeurCloison/2);
 	cloison.rotation.y = Math.PI/2;
 	cloisonsSallesHall.push(cloison);
@@ -120,14 +203,40 @@ function peuplerScene()
 	for(var i = 0; i < 11; i++)
 	{
 		var marche = creerCloison("marche"+i, {hauteur: longueurMarche, largeur: largeurMarche, materiau: materiauMarche}, scene);
+		marche.parent = origine;
 		marche.position = new BABYLON.Vector3(largeurMarche/2+2*largeurMarche/3*i,hauteurSalle-hauteurSalle/10*i,-largeurMusee/2);
 		marche.rotation.x = Math.PI/2;
 	}
 
 	// Création de la cloison de la mezzanine
 	var cloisonMezzanine = creerCloison("cloisonMezzanine",{hauteur:hauteurSalle, largeur:largeurMusee-largeurCloison, materiau:materiauCloisonInterieur}, scene);
+	cloisonMezzanine.parent = origine;
 	cloisonMezzanine.position = new BABYLON.Vector3(0,hauteurSalle,largeurCloison/2);
 	cloisonMezzanine.rotation.y = Math.PI/2;
+
+	var encadrure = creerEncadrure("encadrure",{hauteur:4.8,largeur:3,materiau:materiauPorte},scene);
+	encadrure.parent = origine;
+	encadrure.position = new BABYLON.Vector3(0,5,-13.5) ;
+	encadrure.rotation.y = Math.PI/2;
+
+	// Création des portes
+	var porteG = creerPorteDouble("entreeG",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	porteG.parent = origine;
+	porteG.position = new BABYLON.Vector3(0,0,-10) ; 
+	porteG.rotation.y = Math.PI/2; 
+	portes.push(porteG);
+
+	var porteM = creerPorteDouble("entreeM",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	porteM.parent = origine;
+	porteM.position = new BABYLON.Vector3(0,0,0) ; 
+	porteM.rotation.y = Math.PI/2;
+	portes.push(porteM);
+
+	var porteD = creerPorteDouble("entreeD",{hauteur:5.0,largeur:4,materiau:materiauPorte},scene) ;
+	porteD.parent = origine;
+	porteD.position = new BABYLON.Vector3(0,0,10) ;
+	porteD.rotation.y = Math.PI/2;
+	portes.push(porteD);
 
 	// Création des tableaux
 	var tableaux = [];
