@@ -280,14 +280,14 @@ function peuplerScene()
 	nuit.position.y = 1.7;
 	nuit.position.x = -3*largeurSalle/4;
 
-	var berthe = creerPoster("tableauBerthe",{tableau:"assets/tableaux/berthe.jpg"},scene);
-	berthe.parent = cloisonNord; // On accroche le tableau à la cloison
-	berthe.rotation.y = Math.PI;
-	berthe.position.z = 0.1;
-	berthe.position.y = 1.7;
-	berthe.position.x = largeurMusee/3;
+	var amandier = creerPoster("tableauAmandier",{tableau:"assets/tableaux/amandier.jpg"},scene);
+	amandier.parent = cloisonNord; // On accroche le tableau à la cloison
+	amandier.rotation.y = Math.PI;
+	amandier.position.z = 0.1;
+	amandier.position.y = 1.7;
+	amandier.position.x = largeurMusee/3;
 
-	tableaux.push(berthe, joconde, cri, coquelicots, nuit, berthe);
+	tableaux.push(joconde, cri, coquelicots, nuit, amandier);
 
 	// Création des photos
 	var photos = [];

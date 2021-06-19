@@ -21,7 +21,13 @@ function updateReticle(reticle) {
 			if (mesh.nom == "poster"){
 				reticle.color = "Green";
 				reticle.background = "Green";
-			} 
+			} else {
+				reticle.color = "red"
+				reticle.background = "red";
+			}
+		} else {
+			reticle.color = "red"
+			reticle.background = "red";
 		}
 	} else {
 		reticle.color = "red"
